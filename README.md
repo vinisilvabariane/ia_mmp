@@ -162,20 +162,12 @@ curl.exe -X POST http://localhost:8000/ingest
 ### 5. Fazer pergunta com métricas do estudante
 
 ```bash
-curl.exe -X POST http://localhost:8000/ask -H "Content-Type: application/json" -d '{"question": "Como devo estudar cálculo?", "context": null}'
+curl.exe -X POST http://localhost:8000/ask -H "Content-Type: application/json" -d "{\"question\": \"Como devo estudar cálculo?\", \"context\": null}"
 ```
 
 **Com métricas (quando implementado):**
 ```bash
-curl.exe -X POST http://localhost:8000/ask -H "Content-Type: application/json" -d '{
-    "question": "Como devo estudar cálculo?",
-    "student_metrics": {
-      "id_aluno": 1,
-      "perfil_risco": "medio",
-      "score_risco": 60,
-      ...
-    }
-  }'
+curl.exe -X POST http://localhost:8000/ask -H "Content-Type: application/json" -d "{\"question\": \"Rota voltada a calculo\", \"student_metrics\": {\"id_aluno\": 1, \"perfil_risco\": \"medio\", \"score_risco\": 60, \"necessidade_de_intervencao\": \"media\", \"score_prontidao_geral\": 30, \"nivel_base_matematica\": \"insuficiente\", \"score_base_matematica\": 27, \"autonomia_do_aluno\": \"baixa\", \"score_autonomia\": 17, \"necessidade_de_suporte\": \"alta\", \"dificuldade_predominante\": \"calculo\", \"ponto_de_partida_recomendado\": \"basico\", \"prontidao_para_avancar\": \"nao_pronto\", \"score_prontidao_calculo\": 25, \"intensidade_de_recomendacao\": \"intensiva\"}}"
 ```
 
 ---
@@ -185,33 +177,72 @@ curl.exe -X POST http://localhost:8000/ask -H "Content-Type: application/json" -
 Variáveis de ambiente (`.env`):
 
 ```env
-# LLM
+# ==========================================
+# LLM - GROQ
+# ==========================================
+# Obtenha em: https://grok.ai/settings/tokens
 GROQ_API_KEY=sua_chave_aqui
+
+# Modelo LLM
 LLM_MODEL=llama-3.3-70b-versatile
 
-# Database MySQL
-DB_HOST=localhost
+
+# ==========================================
+# MYSQL - BANCO RELACIONAL
+# ==========================================
+# Use localhost se rodar fora do Docker
+# Use db_mmp se rodar via Docker Compose
+DB_HOST=db_mmp
+
 DB_PORT=3306
 DB_USER=app_mmp
 DB_PASS=app_mmp
 DB_NAME=db_mmp
 
-# Vector Store (Qdrant)
+
+# ==========================================
+# QDRANT - VECTOR DATABASE
+# ==========================================
 QDRANT_HOST=qdrant
 QDRANT_PORT=6333
-QDRANT_COLLECTION=documentos
 
-# Embeddings
+# Mantive "documents" (era o padrão original)
+QDRANT_COLLECTION=documents
+
+
+# ==========================================
+# EMBEDDINGS
+# ==========================================
 EMBEDDINGS_MODEL=sentence-transformers/all-mpnet-base-v2
 
-# RAG
-CHUNK_SIZE=1000
-CHUNK_OVERLAP=100
-RETRIEVER_K=5
 
+# ==========================================
+# CHUNKING
+# ==========================================
+CHUNK_SIZE=1000
+
+# Mantive 150 (melhor para contexto)
+CHUNK_OVERLAP=150
+
+
+# ==========================================
+# RETRIEVAL
+# ==========================================
+RETRIEVER_K=4
+
+
+# ==========================================
 # API
+# ==========================================
 API_HOST=0.0.0.0
 API_PORT=8000
+
+
+# ==========================================
+# DEBUG
+# ==========================================
+DEBUG=False
+LOG_LEVEL=INFO
 ```
 
 ---
