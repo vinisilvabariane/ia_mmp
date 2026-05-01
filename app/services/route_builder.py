@@ -54,7 +54,6 @@ class LearningRouteBuilder:
             alternative_plan=self._build_alternative_plan(diagnosis),
             prioritized_resources=prioritized_resources,
             generated_queries=queries,
-            raw_context=resources,
         )
 
     def _build_diagnosis(self, metrics: StudentMetrics) -> RouteDiagnosis:

@@ -48,7 +48,7 @@ Tabela `disciplines`
 - assessment_methods
 
 === OBJETIVO ===
-Com base na pergunta do estudante e nas metricas, gere consultas SQL que recuperem o que for necessario para:
+Com base na pergunta atual do estudante, nas metricas e nas respostas de um formulario educacional, gere consultas SQL que recuperem o que for necessario para:
 - identificar prerequisitos;
 - selecionar disciplinas relevantes;
 - selecionar videos compatíveis com o tema e com o nivel inferido;
@@ -65,6 +65,8 @@ Com base na pergunta do estudante e nas metricas, gere consultas SQL que recuper
 8. Sempre inclua `LIMIT {sql_limit}` em cada query utilizada.
 9. Se as metricas indicarem base fraca, priorize consultas que tragam fundamentos e prerequisitos.
 10. Se as metricas indicarem boa prontidao, permita incluir itens de aprofundamento.
+11. Quando houver respostas de formulario educacional, use-as como contexto adicional para desambiguar tema, nivel, lacunas, preferencias e necessidade de aprofundamento.
+12. Nao ignore a pergunta atual; ela continua sendo a prioridade principal.
 
 === FORMATO DE SAIDA ===
 {{
@@ -78,4 +80,7 @@ Pergunta do estudante:
 
 Metricas do estudante:
 {student_metrics}
+
+Respostas do formulario educacional:
+{educational_form_responses}
 """

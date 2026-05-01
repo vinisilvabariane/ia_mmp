@@ -15,6 +15,7 @@ def ask(payload: AskPayload) -> dict[str, Any]:
     answer = service.ask(
         question=payload.question,
         student_metrics=payload.student_metrics,
+        educational_form_responses=payload.educational_form_responses or payload.question_answer_context,
     )
     return {"answer": answer}
 
@@ -24,6 +25,7 @@ def generate_route(payload: GenerateRouteRequest) -> GenerateRouteResponse:
     route = service.generate_route(
         question=payload.question,
         student_metrics=payload.student_metrics,
+        educational_form_responses=payload.educational_form_responses or payload.question_answer_context,
     )
     return GenerateRouteResponse(route=route)
 

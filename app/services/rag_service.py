@@ -12,7 +12,7 @@ from app.core.config import LLM_MAX_RETRIES, LLM_MODEL, LLM_TIMEOUT_SECONDS, SQL
 from app.core.errors import DependencyAppError, RouteGenerationError, SQLGenerationError
 from app.core.prompts import SQL_GENERATION_PROMPT
 from app.repositories.database_repository import DatabaseRepository
-from app.schemas.route import LearningRoute, ResourceQuerySet, StudentMetrics
+from app.schemas.route import LearningRoute, QuestionAnswerContext, ResourceQuerySet, StudentMetrics
 from app.services.route_builder import LearningRouteBuilder
 from app.services.route_renderer import RouteRenderer
 
@@ -30,13 +30,35 @@ class RagService:
         self.route_builder = route_builder or LearningRouteBuilder()
         self.route_renderer = route_renderer or RouteRenderer()
 
-    def generate_route(self, question: str, student_metrics: StudentMetrics | None) -> LearningRoute:
+    @staticmethod
+    def _normalize_educational_form_responses(
+        educational_form_responses: list[QuestionAnswerContext] | None,
+        question_answer_context: list[QuestionAnswerContext] | None = None,
+    ) -> list[QuestionAnswerContext]:
+        return list(educational_form_responses or question_answer_context or [])
+
+    def generate_route(
+        self,
+        question: str,
+        student_metrics: StudentMetrics | None,
+        educational_form_responses: list[QuestionAnswerContext] | None = None,
+        question_answer_context: list[QuestionAnswerContext] | None = None,
+    ) -> LearningRoute:
         metrics = student_metrics or StudentMetrics()
-        queries = self.build_sql_queries(question=question, student_metrics=metrics)
+        normalized_form_responses = self._normalize_educational_form_responses(
+            educational_form_responses,
+            question_answer_context,
+        )
+        queries = self.build_sql_queries(
+            question=question,
+            student_metrics=metrics,
+            educational_form_responses=normalized_form_responses,
+        )
         results = self.database_repository.execute_resource_queries(
             queries=queries.model_dump(),
             limit=SQL_SEARCH_LIMIT,
         )
+        print("RESULTS", results)
         try:
             return self.route_builder.build(
                 question=question,
@@ -51,13 +73,34 @@ class RagService:
     def explain_route(self, route: LearningRoute) -> str:
         return self.route_renderer.render(route)
 
-    def ask(self, question: str, student_metrics: StudentMetrics | None) -> str:
-        route = self.generate_route(question=question, student_metrics=student_metrics)
+    def ask(
+        self,
+        question: str,
+        student_metrics: StudentMetrics | None,
+        educational_form_responses: list[QuestionAnswerContext] | None = None,
+        question_answer_context: list[QuestionAnswerContext] | None = None,
+    ) -> str:
+        route = self.generate_route(
+            question=question,
+            student_metrics=student_metrics,
+            educational_form_responses=educational_form_responses,
+            question_answer_context=question_answer_context,
+        )
         return self.explain_route(route)
 
-    def build_sql_queries(self, question: str, student_metrics: StudentMetrics) -> ResourceQuerySet:
+    def build_sql_queries(
+        self,
+        question: str,
+        student_metrics: StudentMetrics,
+        educational_form_responses: list[QuestionAnswerContext] | None = None,
+    ) -> ResourceQuerySet:
         sql_prompt = ChatPromptTemplate.from_template(SQL_GENERATION_PROMPT)
         llm = self._build_llm()
+        serialized_educational_form_responses = json.dumps(
+            [entry.model_dump() for entry in (educational_form_responses or [])],
+            ensure_ascii=True,
+            indent=2,
+        )
         raw_response = (
             sql_prompt
             | llm
@@ -67,6 +110,7 @@ class RagService:
             {
                 "question": question,
                 "student_metrics": json.dumps(student_metrics.model_dump(exclude_none=True), ensure_ascii=True, indent=2),
+                "educational_form_responses": serialized_educational_form_responses,
                 "sql_limit": SQL_SEARCH_LIMIT,
             }
         )
