@@ -43,7 +43,7 @@ Liveness check.
 
 Readiness check com verificacao de configuracao e banco.
 
-### `POST /routes/generate`
+### `POST /generate`
 
 Gera a rota estruturada.
 
