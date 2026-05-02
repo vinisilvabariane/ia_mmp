@@ -10,7 +10,7 @@ from langchain_groq import ChatGroq
 
 from app.core.config import LLM_MAX_RETRIES, LLM_MODEL, LLM_TIMEOUT_SECONDS, SQL_SEARCH_LIMIT
 from app.core.errors import DependencyAppError, RouteGenerationError, SQLGenerationError
-from app.core.prompts import SQL_GENERATION_PROMPT
+from app.core.prompts import ROUTE_GENERATION_PROMPT, SQL_GENERATION_PROMPT
 from app.repositories.database_repository import DatabaseRepository
 from app.schemas.route import LearningRoute, QuestionAnswerContext, ResourceQuerySet, StudentMetrics
 from app.services.route_builder import LearningRouteBuilder
@@ -30,25 +30,14 @@ class RagService:
         self.route_builder = route_builder or LearningRouteBuilder()
         self.route_renderer = route_renderer or RouteRenderer()
 
-    @staticmethod
-    def _normalize_educational_form_responses(
-        educational_form_responses: list[QuestionAnswerContext] | None,
-        question_answer_context: list[QuestionAnswerContext] | None = None,
-    ) -> list[QuestionAnswerContext]:
-        return list(educational_form_responses or question_answer_context or [])
-
     def generate_route(
         self,
         question: str,
         student_metrics: StudentMetrics | None,
         educational_form_responses: list[QuestionAnswerContext] | None = None,
-        question_answer_context: list[QuestionAnswerContext] | None = None,
     ) -> LearningRoute:
         metrics = student_metrics or StudentMetrics()
-        normalized_form_responses = self._normalize_educational_form_responses(
-            educational_form_responses,
-            question_answer_context,
-        )
+        normalized_form_responses = list(educational_form_responses or [])
         queries = self.build_sql_queries(
             question=question,
             student_metrics=metrics,
@@ -58,17 +47,33 @@ class RagService:
             queries=queries.model_dump(),
             limit=SQL_SEARCH_LIMIT,
         )
-        print("RESULTS", results)
         try:
-            return self.route_builder.build(
+            route_payload = self.build_route_payload(
+                question=question,
+                student_metrics=metrics,
+                educational_form_responses=normalized_form_responses,
+                queries=queries,
+                resources=results,
+            )
+            return self.route_builder.normalize_llm_route(
+                route_payload=route_payload,
                 question=question,
                 metrics=metrics,
                 queries=queries,
                 resources=results,
             )
         except Exception as exc:
-            logger.exception("route_builder_failed question=%s", question)
-            raise RouteGenerationError("Falha ao montar a rota de aprendizagem.") from exc
+            logger.exception("route_generation_llm_failed question=%s", question)
+            try:
+                return self.route_builder.build(
+                    question=question,
+                    metrics=metrics,
+                    queries=queries,
+                    resources=results,
+                )
+            except Exception as fallback_exc:
+                logger.exception("route_builder_failed question=%s", question)
+                raise RouteGenerationError("Falha ao montar a rota de aprendizagem.") from fallback_exc
 
     def explain_route(self, route: LearningRoute) -> str:
         return self.route_renderer.render(route)
@@ -78,13 +83,11 @@ class RagService:
         question: str,
         student_metrics: StudentMetrics | None,
         educational_form_responses: list[QuestionAnswerContext] | None = None,
-        question_answer_context: list[QuestionAnswerContext] | None = None,
     ) -> str:
         route = self.generate_route(
             question=question,
             student_metrics=student_metrics,
             educational_form_responses=educational_form_responses,
-            question_answer_context=question_answer_context,
         )
         return self.explain_route(route)
 
@@ -94,30 +97,20 @@ class RagService:
         student_metrics: StudentMetrics,
         educational_form_responses: list[QuestionAnswerContext] | None = None,
     ) -> ResourceQuerySet:
-        sql_prompt = ChatPromptTemplate.from_template(SQL_GENERATION_PROMPT)
-        llm = self._build_llm()
-        serialized_educational_form_responses = json.dumps(
-            [entry.model_dump() for entry in (educational_form_responses or [])],
-            ensure_ascii=True,
-            indent=2,
-        )
-        raw_response = (
-            sql_prompt
-            | llm
-            | StrOutputParser()
-            | RunnableLambda(self.clean_response)
-        ).invoke(
+        raw_response = self._invoke_json_prompt(
+            SQL_GENERATION_PROMPT,
             {
                 "question": question,
-                "student_metrics": json.dumps(student_metrics.model_dump(exclude_none=True), ensure_ascii=True, indent=2),
-                "educational_form_responses": serialized_educational_form_responses,
+                "student_metrics": self._serialize_json(student_metrics.model_dump(exclude_none=True)),
+                "educational_form_responses": self._serialize_json(
+                    [entry.model_dump() for entry in (educational_form_responses or [])]
+                ),
                 "sql_limit": SQL_SEARCH_LIMIT,
-            }
+            },
         )
 
         try:
-            parsed_response = self.parse_sql_queries(raw_response)
-            query_set = ResourceQuerySet.model_validate(parsed_response)
+            query_set = ResourceQuerySet.model_validate(self.parse_json_object(raw_response))
         except Exception as exc:
             logger.exception("sql_query_parse_failed response=%s", raw_response)
             raise SQLGenerationError("Falha ao interpretar as queries SQL geradas pela LLM.") from exc
@@ -131,7 +124,34 @@ class RagService:
         )
         return query_set
 
-    def parse_sql_queries(self, raw_response: str) -> dict[str, str | None]:
+    def build_route_payload(
+        self,
+        question: str,
+        student_metrics: StudentMetrics,
+        educational_form_responses: list[QuestionAnswerContext] | None,
+        queries: ResourceQuerySet,
+        resources: dict[str, list[dict[str, Any]]],
+    ) -> dict[str, Any]:
+        raw_response = self._invoke_json_prompt(
+            ROUTE_GENERATION_PROMPT,
+            {
+                "question": question,
+                "student_metrics": self._serialize_json(student_metrics.model_dump(exclude_none=True)),
+                "educational_form_responses": self._serialize_json(
+                    [entry.model_dump() for entry in (educational_form_responses or [])]
+                ),
+                "generated_queries": self._serialize_json(queries.model_dump()),
+                "retrieved_resources": self._serialize_json(resources, default=str),
+            },
+        )
+
+        try:
+            return self.parse_json_object(raw_response)
+        except Exception as exc:
+            logger.exception("route_payload_parse_failed question=%s response=%s", question, raw_response)
+            raise RouteGenerationError("Falha ao interpretar a rota gerada pela LLM.") from exc
+
+    def parse_json_object(self, raw_response: str) -> dict[str, Any]:
         normalized_response = raw_response.strip()
         if normalized_response.startswith("```"):
             normalized_response = re.sub(r"^```(?:json)?", "", normalized_response).strip()
@@ -139,11 +159,24 @@ class RagService:
 
         parsed = json.loads(normalized_response)
         if not isinstance(parsed, dict):
-            raise ValueError("O gerador de SQL deve retornar um objeto JSON.")
+            raise ValueError("A LLM deve retornar um objeto JSON.")
         return parsed
 
     def clean_response(self, text: str) -> str:
         return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
+    def _invoke_json_prompt(self, prompt_template: str, variables: dict[str, Any]) -> str:
+        prompt = ChatPromptTemplate.from_template(prompt_template)
+        llm = self._build_llm()
+        return (
+            prompt
+            | llm
+            | StrOutputParser()
+            | RunnableLambda(self.clean_response)
+        ).invoke(variables)
+
+    def _serialize_json(self, value: Any, *, default: Any | None = None) -> str:
+        return json.dumps(value, ensure_ascii=True, indent=2, default=default)
 
     def _build_llm(self) -> ChatGroq:
         try:

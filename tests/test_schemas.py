@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.schemas.route import GenerateRouteRequest
+from app.schemas.route import GenerateMetricsRequest, GenerateRouteRequest
 
 
 def test_generate_route_request_validates_metric_ranges() -> None:
@@ -17,7 +17,7 @@ def test_generate_route_request_requires_non_empty_question() -> None:
         GenerateRouteRequest(question="", student_metrics={})
 
 
-def test_generate_route_request_accepts_question_answer_context() -> None:
+def test_generate_route_request_accepts_educational_form_responses() -> None:
     payload = GenerateRouteRequest(
         question="Como estudar calculo?",
         educational_form_responses=[
@@ -29,9 +29,24 @@ def test_generate_route_request_accepts_question_answer_context() -> None:
     assert payload.educational_form_responses[0].question == "O que devo revisar antes?"
 
 
-def test_generate_route_request_rejects_empty_question_answer_context_fields() -> None:
+def test_generate_route_request_rejects_empty_educational_form_response_fields() -> None:
     with pytest.raises(ValidationError):
         GenerateRouteRequest(
             question="Como estudar calculo?",
             educational_form_responses=[{"question": "", "answer": "Resposta valida"}],
         )
+
+
+def test_generate_metrics_request_requires_some_input() -> None:
+    with pytest.raises(ValidationError):
+        GenerateMetricsRequest()
+
+
+def test_generate_metrics_request_requires_form_responses() -> None:
+    payload = GenerateMetricsRequest(
+        educational_form_responses=[
+            {"question": "Como voce estuda hoje?", "answer": "Sem rotina e com dificuldade em algebra."}
+        ]
+    )
+
+    assert len(payload.educational_form_responses) == 1

@@ -39,22 +39,72 @@ class LearningRouteBuilder:
     ) -> LearningRoute:
         diagnosis = self._build_diagnosis(metrics)
         prioritized_resources = self._build_prioritized_resources(question, diagnosis, resources)
-        stages = self._build_stages(question, diagnosis, prioritized_resources)
-        checkpoints = self._build_checkpoints(diagnosis)
+        central_goal = self._build_central_goal(question)
+        stages = self._build_stages(central_goal, diagnosis, prioritized_resources)
+        checkpoints = self._build_checkpoints()
 
         return LearningRoute(
             question=question,
             diagnosis=diagnosis,
-            central_goal=self._build_central_goal(question),
+            central_goal=central_goal,
             starting_point=diagnosis.starting_level,
             route_intensity=diagnosis.support_level,
             suggested_schedule=self._build_schedule(diagnosis),
             stages=stages,
             checkpoints=checkpoints,
-            alternative_plan=self._build_alternative_plan(diagnosis),
+            alternative_plan=self._build_alternative_plan(),
             prioritized_resources=prioritized_resources,
             generated_queries=queries,
         )
+
+    def normalize_llm_route(
+        self,
+        route_payload: dict[str, Any],
+        question: str,
+        metrics: StudentMetrics,
+        queries: ResourceQuerySet,
+        resources: dict[str, list[dict[str, Any]]],
+    ) -> LearningRoute:
+        heuristic_route = self.build(
+            question=question,
+            metrics=metrics,
+            queries=queries,
+            resources=resources,
+        )
+        sanitized_payload = dict(route_payload)
+        sanitized_payload["question"] = question
+        sanitized_payload["generated_queries"] = queries.model_dump()
+        sanitized_payload["raw_context"] = resources
+        sanitized_payload["central_goal"] = sanitized_payload.get("central_goal") or heuristic_route.central_goal
+        sanitized_payload["starting_point"] = sanitized_payload.get("starting_point") or heuristic_route.starting_point
+        sanitized_payload["route_intensity"] = sanitized_payload.get("route_intensity") or heuristic_route.route_intensity
+        sanitized_payload["suggested_schedule"] = sanitized_payload.get("suggested_schedule") or heuristic_route.suggested_schedule
+        sanitized_payload["diagnosis"] = self._merge_diagnosis(
+            route_payload.get("diagnosis"),
+            metrics,
+            heuristic_route.diagnosis,
+        )
+        sanitized_payload["prioritized_resources"] = self._merge_prioritized_resources(
+            route_payload.get("prioritized_resources"),
+            heuristic_route.prioritized_resources,
+            question,
+            resources,
+            sanitized_payload["diagnosis"],
+        )
+        sanitized_payload["alternative_plan"] = self._merge_alternative_plan(
+            route_payload.get("alternative_plan"),
+            heuristic_route.alternative_plan,
+        )
+        sanitized_payload["checkpoints"] = self._merge_checkpoints(
+            route_payload.get("checkpoints"),
+            heuristic_route.checkpoints,
+        )
+        sanitized_payload["stages"] = self._merge_stages(
+            route_payload.get("stages"),
+            heuristic_route.stages,
+            sanitized_payload["prioritized_resources"],
+        )
+        return LearningRoute.model_validate(sanitized_payload)
 
     def _build_diagnosis(self, metrics: StudentMetrics) -> RouteDiagnosis:
         risk_band = _score_band(metrics.risk_score, invert=True)
@@ -144,13 +194,146 @@ class LearningRouteBuilder:
             study_strategies=strategies,
         )
 
+    def _merge_diagnosis(
+        self,
+        diagnosis_payload: Any,
+        metrics: StudentMetrics,
+        fallback: RouteDiagnosis,
+    ) -> dict[str, Any]:
+        payload = diagnosis_payload if isinstance(diagnosis_payload, dict) else {}
+        return {
+            "risk_score": metrics.risk_score,
+            "general_readiness_score": metrics.general_readiness_score,
+            "mathematical_foundation_score": metrics.mathematical_foundation_score,
+            "autonomy_score": metrics.autonomy_score,
+            "support_level": payload.get("support_level") or fallback.support_level,
+            "starting_level": payload.get("starting_level") or fallback.starting_level,
+            "pace": payload.get("pace") or fallback.pace,
+            "confidence_note": payload.get("confidence_note") or fallback.confidence_note,
+            "summary": payload.get("summary") or fallback.summary,
+        }
+
+    def _merge_prioritized_resources(
+        self,
+        prioritized_payload: Any,
+        fallback: PrioritizedResources,
+        question: str,
+        resources: dict[str, list[dict[str, Any]]],
+        diagnosis_payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        payload = prioritized_payload if isinstance(prioritized_payload, dict) else {}
+        diagnosis = RouteDiagnosis.model_validate(diagnosis_payload)
+        focus_terms = self._focus_terms(question, resources)
+        return {
+            "disciplines": self._merge_resource_collection(
+                payload.get("disciplines"),
+                fallback.disciplines,
+                "discipline",
+                resources.get("disciplines_query", []),
+                focus_terms,
+                diagnosis,
+            ),
+            "videos": self._merge_resource_collection(
+                payload.get("videos"),
+                fallback.videos,
+                "video",
+                resources.get("videos_query", []),
+                focus_terms,
+                diagnosis,
+            ),
+            "literature": self._merge_resource_collection(
+                payload.get("literature"),
+                fallback.literature,
+                "literature",
+                resources.get("literature_query", []),
+                focus_terms,
+                diagnosis,
+            ),
+            "study_strategies": self._coerce_string_list(payload.get("study_strategies")) or fallback.study_strategies,
+        }
+
+    def _merge_alternative_plan(
+        self,
+        alternative_payload: Any,
+        fallback: AlternativePlan,
+    ) -> dict[str, str]:
+        payload = alternative_payload if isinstance(alternative_payload, dict) else {}
+        return {
+            "if_blocked": payload.get("if_blocked") or fallback.if_blocked,
+            "if_ahead": payload.get("if_ahead") or fallback.if_ahead,
+            "minimum_viable_plan": payload.get("minimum_viable_plan") or fallback.minimum_viable_plan,
+        }
+
+    def _merge_checkpoints(
+        self,
+        checkpoints_payload: Any,
+        fallback: list[RouteCheckpoint],
+    ) -> list[dict[str, Any]]:
+        if not isinstance(checkpoints_payload, list) or not checkpoints_payload:
+            return [checkpoint.model_dump() for checkpoint in fallback]
+
+        merged_checkpoints: list[dict[str, Any]] = []
+        for index, payload in enumerate(checkpoints_payload):
+            fallback_checkpoint = fallback[min(index, len(fallback) - 1)]
+            payload = payload if isinstance(payload, dict) else {}
+            merged_checkpoints.append(
+                {
+                    "name": payload.get("name") or fallback_checkpoint.name,
+                    "when": payload.get("when") or fallback_checkpoint.when,
+                    "success_signals": self._coerce_string_list(payload.get("success_signals")) or fallback_checkpoint.success_signals,
+                    "if_not_ready": self._coerce_string_list(payload.get("if_not_ready")) or fallback_checkpoint.if_not_ready,
+                }
+            )
+
+        if len(merged_checkpoints) < 2:
+            merged_checkpoints.extend(
+                checkpoint.model_dump() for checkpoint in fallback[len(merged_checkpoints):2]
+            )
+        return merged_checkpoints
+
+    def _merge_stages(
+        self,
+        stages_payload: Any,
+        fallback: list[LearningStage],
+        prioritized_resources_payload: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        if not isinstance(stages_payload, list) or not stages_payload:
+            return [stage.model_dump() for stage in fallback]
+
+        available_resources = self._resource_lookup_from_prioritized(prioritized_resources_payload)
+        merged_stages: list[dict[str, Any]] = []
+        for index, payload in enumerate(stages_payload):
+            fallback_stage = fallback[min(index, len(fallback) - 1)]
+            payload = payload if isinstance(payload, dict) else {}
+            merged_stages.append(
+                {
+                    "stage_number": payload.get("stage_number") or (index + 1),
+                    "title": payload.get("title") or fallback_stage.title,
+                    "objective": payload.get("objective") or fallback_stage.objective,
+                    "content_focus": self._coerce_string_list(payload.get("content_focus")) or fallback_stage.content_focus,
+                    "study_actions": self._coerce_string_list(payload.get("study_actions")) or fallback_stage.study_actions,
+                    "estimated_hours": self._coerce_positive_int(payload.get("estimated_hours"), fallback_stage.estimated_hours),
+                    "advancement_criteria": payload.get("advancement_criteria") or fallback_stage.advancement_criteria,
+                    "if_struggling": payload.get("if_struggling") or fallback_stage.if_struggling,
+                    "if_excelling": payload.get("if_excelling") or fallback_stage.if_excelling,
+                    "resources": self._merge_stage_resources(
+                        payload.get("resources"),
+                        fallback_stage.resources,
+                        available_resources,
+                    ),
+                }
+            )
+
+        if len(merged_stages) < 3:
+            merged_stages.extend(stage.model_dump() for stage in fallback[len(merged_stages):3])
+        return merged_stages
+
     def _build_stages(
         self,
-        question: str,
+        central_goal: str,
         diagnosis: RouteDiagnosis,
         prioritized_resources: PrioritizedResources,
     ) -> list[LearningStage]:
-        focus = self._build_central_goal(question)
         foundation_resources = prioritized_resources.disciplines[:1] + prioritized_resources.videos[:1]
         practice_resources = prioritized_resources.videos[1:2] + prioritized_resources.literature[:1]
         application_resources = prioritized_resources.disciplines[1:2] + prioritized_resources.literature[1:2]
@@ -158,7 +341,7 @@ class LearningRouteBuilder:
         stage1 = LearningStage(
             stage_number=1,
             title="Fundamentos e alinhamento",
-            objective=f"Consolidar a base necessaria para avancar em {focus}.",
+            objective=f"Consolidar a base necessaria para avancar em {central_goal}.",
             content_focus=[diagnosis.starting_level, "conceitos nucleares", "prerequisitos"],
             study_actions=[
                 "Mapear o que ja domina e o que ainda depende de revisao.",
@@ -205,7 +388,7 @@ class LearningRouteBuilder:
         )
         return [stage1, stage2, stage3]
 
-    def _build_checkpoints(self, diagnosis: RouteDiagnosis) -> list[RouteCheckpoint]:
+    def _build_checkpoints(self) -> list[RouteCheckpoint]:
         return [
             RouteCheckpoint(
                 name="Checkpoint 1",
@@ -233,7 +416,7 @@ class LearningRouteBuilder:
             ),
         ]
 
-    def _build_alternative_plan(self, diagnosis: RouteDiagnosis) -> AlternativePlan:
+    def _build_alternative_plan(self) -> AlternativePlan:
         return AlternativePlan(
             if_blocked="Reduzir o objetivo semanal para um unico conceito central, reforcar prerequisitos e encurtar as sessoes.",
             if_ahead="Antecipar um problema de aplicacao, incluir literatura complementar e transformar a etapa final em mini projeto.",
@@ -262,6 +445,91 @@ class LearningRouteBuilder:
                     if isinstance(value, str):
                         terms.update(_normalize_text(part) for part in value.split() if len(part) > 3)
         return {term for term in terms if term}
+
+    def _merge_resource_collection(
+        self,
+        resource_payload: Any,
+        fallback: list[ResourceReference],
+        kind: str,
+        source_rows: list[dict[str, Any]],
+        focus_terms: set[str],
+        diagnosis: RouteDiagnosis,
+    ) -> list[dict[str, Any]]:
+        fallback_by_title = {item.title: item for item in fallback}
+        source_by_title = {
+            str(row.get("title") or row.get("name") or "Recurso sem titulo"): row
+            for row in source_rows
+        }
+        merged_items: list[dict[str, Any]] = []
+
+        if isinstance(resource_payload, list):
+            for raw_item in resource_payload:
+                if not isinstance(raw_item, dict):
+                    continue
+                title = str(raw_item.get("title") or "")
+                fallback_item = fallback_by_title.get(title)
+                row = source_by_title.get(title)
+                if row is not None:
+                    base_item = self._to_resource_reference(kind, row, focus_terms, diagnosis)
+                    item_dump = base_item.model_dump()
+                    item_dump["reason"] = raw_item.get("reason") or item_dump["reason"]
+                    merged_items.append(item_dump)
+                elif fallback_item is not None:
+                    item_dump = fallback_item.model_dump()
+                    item_dump["reason"] = raw_item.get("reason") or item_dump["reason"]
+                    merged_items.append(item_dump)
+
+        if merged_items:
+            return merged_items[:3]
+        return [item.model_dump() for item in fallback]
+
+    def _merge_stage_resources(
+        self,
+        resource_payload: Any,
+        fallback: list[ResourceReference],
+        available_resources: dict[str, ResourceReference],
+    ) -> list[dict[str, Any]]:
+        if not isinstance(resource_payload, list):
+            return [item.model_dump() for item in fallback]
+
+        merged_items: list[dict[str, Any]] = []
+        for raw_item in resource_payload:
+            if not isinstance(raw_item, dict):
+                continue
+            title = str(raw_item.get("title") or "")
+            available_item = available_resources.get(title)
+            if available_item is None:
+                continue
+            item_dump = available_item.model_dump()
+            item_dump["reason"] = raw_item.get("reason") or item_dump["reason"]
+            merged_items.append(item_dump)
+
+        if merged_items:
+            return merged_items
+        return [item.model_dump() for item in fallback]
+
+    def _resource_lookup_from_prioritized(
+        self,
+        prioritized_resources_payload: dict[str, Any],
+    ) -> dict[str, ResourceReference]:
+        available_resources: dict[str, ResourceReference] = {}
+        for key in ("disciplines", "videos", "literature"):
+            for item in prioritized_resources_payload.get(key, []):
+                resource = ResourceReference.model_validate(item)
+                available_resources[resource.title] = resource
+        return available_resources
+
+    def _coerce_string_list(self, value: Any) -> list[str]:
+        if not isinstance(value, list):
+            return []
+        return [str(item).strip() for item in value if str(item).strip()]
+
+    def _coerce_positive_int(self, value: Any, fallback: int) -> int:
+        try:
+            coerced = int(value)
+        except (TypeError, ValueError):
+            return fallback
+        return coerced if coerced >= 1 else fallback
 
     def _to_resource_reference(
         self,

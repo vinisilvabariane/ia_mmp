@@ -23,3 +23,30 @@ def test_generate_route_returns_typed_error_payload() -> None:
         "error": "dependency_unavailable",
         "detail": "Banco indisponivel.",
     }
+
+
+def test_generate_metrics_returns_typed_metrics_payload() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/routes/generate-metrics",
+        json={
+            "educational_form_responses": [
+                {
+                    "question": "Quais sao suas dificuldades?",
+                    "answer": "Tenho dificuldade em algebra e procrastino bastante.",
+                }
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert set(payload) == {
+        "risk_score",
+        "general_readiness_score",
+        "mathematical_foundation_score",
+        "autonomy_score",
+    }
+    assert payload["risk_score"] >= 0
+    assert payload["mathematical_foundation_score"] <= 100

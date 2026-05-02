@@ -21,9 +21,10 @@ class GenerateRouteRequest(BaseModel):
     question: str = Field(..., min_length=1)
     student_metrics: StudentMetrics | None = None
     educational_form_responses: list[QuestionAnswerContext] = Field(default_factory=list)
-    question_answer_context: list[QuestionAnswerContext] = Field(default_factory=list, exclude=True)
 
-    model_config = ConfigDict(populate_by_name=True)
+
+class GenerateMetricsRequest(BaseModel):
+    educational_form_responses: list[QuestionAnswerContext] = Field(..., min_length=1)
 
 
 class ResourceQuerySet(BaseModel):
