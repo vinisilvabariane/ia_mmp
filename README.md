@@ -51,14 +51,24 @@ Exemplo:
 
 ```json
 {
-  "question": "Como devo estudar calculo?",
-  "student_metrics": {
-    "risk_score": 72,
-    "general_readiness_score": 41,
-    "mathematical_foundation_score": 33,
-    "autonomy_score": 28
+    "question": "Quero aprender cálculo do zero",
+    "student_metrics": {
+      "risk_score": 72,
+      "general_readiness_score": 41,
+      "mathematical_foundation_score": 33,
+      "autonomy_score": 28
+    },
+    "educational_form_responses": [
+      {
+        "question": "Quais conteúdos você mais domina?",
+        "answer": "Tenho dificuldade em álgebra e funções."
+      },
+      {
+        "question": "Como prefere estudar?",
+        "answer": "Videoaulas e exercícios práticos."
+      }
+    ]
   }
-}
 ```
 
 Resposta resumida:
