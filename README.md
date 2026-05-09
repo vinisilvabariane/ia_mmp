@@ -43,7 +43,7 @@ Liveness check.
 
 Readiness check com verificacao de configuracao e banco.
 
-### `POST /routes/generate`
+### `POST /generate`
 
 Gera a rota estruturada.
 
@@ -109,12 +109,6 @@ Recebe um objeto `LearningRoute` e devolve a versao textual.
 
 Endpoint legado. Internamente ele gera a rota e devolve o texto renderizado.
 
-## Estrutura esperada no banco
-
-- `videos`
-- `literature`
-- `disciplines`
-
 Os arquivos em [`data`](/C:/Users/Usuario/Documents/ia_mmp/data) ja estao em UTF-8. A aplicacao trata normalizacao textual no fluxo de recomendacao.
 
 ## Variaveis de ambiente
@@ -122,20 +116,10 @@ Os arquivos em [`data`](/C:/Users/Usuario/Documents/ia_mmp/data) ja estao em UTF
 Use [`.env.example`](/C:/Users/Usuario/Documents/ia_mmp/.env.example) como base.
 
 ```env
-GROQ_API_KEY=your_groq_api_key_here
-DB_HOST=db_mmp
 DB_PORT=3306
 DB_USER=app_mmp
 DB_PASS=app_mmp
 DB_NAME=db_mmp
-LLM_MODEL=llama-3.3-70b-versatile
-LLM_TIMEOUT_SECONDS=15
-LLM_MAX_RETRIES=1
-SQL_SEARCH_LIMIT=9
-DB_CONNECT_TIMEOUT_SECONDS=5
-DEBUG=False
-LOG_LEVEL=INFO
-```
 
 ## Testes
 
