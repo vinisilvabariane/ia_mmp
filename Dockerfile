@@ -1,10 +1,24 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
+
+# Evita geração de arquivos .pyc
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Mostra logs imediatamente
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Instala pipenv
+RUN pip install --no-cache-dir pipenv
 
+# Copia apenas dependências primeiro
+# (melhora cache do Docker)
+COPY Pipfile Pipfile.lock ./
+
+# Instala dependências no sistema
+RUN pipenv install --system --deploy
+
+# Copia restante da aplicação
 COPY . .
 
 EXPOSE 8000

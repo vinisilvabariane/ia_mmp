@@ -1,8 +1,0 @@
-fastapi==0.135.2
-httpx==0.28.1
-langchain-core>=1.2.8
-langchain-groq==1.1.2
-mysql-connector-python==9.1.0
-pytest==8.4.2
-python-dotenv==1.1.0
-uvicorn==0.42.0
