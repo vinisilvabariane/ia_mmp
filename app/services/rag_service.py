@@ -15,6 +15,7 @@ from app.repositories.database_repository import DatabaseRepository
 from app.schemas.route import LearningRoute, QuestionAnswerContext, ResourceQuerySet, StudentMetrics
 from app.services.route_builder import LearningRouteBuilder
 from app.services.route_renderer import RouteRenderer
+from app.services.search_fallback_service import SearchFallbackService
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ class RagService:
         self.database_repository = database_repository or DatabaseRepository()
         self.route_builder = route_builder or LearningRouteBuilder()
         self.route_renderer = route_renderer or RouteRenderer()
+        self.search_fallback = SearchFallbackService(database_repository=self.database_repository)
 
     def generate_route(
         self,
@@ -47,6 +49,14 @@ class RagService:
             queries=queries.model_dump(),
             limit=SQL_SEARCH_LIMIT,
         )
+        
+        # Enriquecer resultados com fallback queries se necessário
+        results = self.enrich_results_with_fallback(
+            question=question,
+            initial_results=results,
+            limit=SQL_SEARCH_LIMIT
+        )
+        
         try:
             route_payload = self.build_route_payload(
                 question=question,
@@ -194,3 +204,45 @@ class RagService:
                 raise DependencyAppError("Falha ao inicializar o cliente da LLM.") from exc
         except Exception as exc:
             raise DependencyAppError("Falha ao inicializar o cliente da LLM.") from exc
+
+    def enrich_results_with_fallback(
+        self,
+        question: str,
+        initial_results: dict[str, list[dict[str, Any]]],
+        limit: int
+    ) -> dict[str, list[dict[str, Any]]]:
+        """
+        Enriquece resultados com fallback queries se alguma categoria estiver vazia.
+        Extrai termos da pergunta e tenta múltiplas estratégias de busca.
+        """
+        results = dict(initial_results)
+        search_terms = self.search_fallback.extract_search_terms(question)
+        
+        # Fallback para videos
+        if not results.get("videos_query"):
+            logger.info("Aplicando fallback para videos_query")
+            fallback_queries = self.search_fallback.build_videos_fallback_queries(search_terms, limit)
+            fallback_results = self.search_fallback.execute_fallback_queries(fallback_queries)
+            results["videos_query"] = fallback_results
+            if fallback_results:
+                logger.info(f"Fallback videos retornou {len(fallback_results)} resultados")
+        
+        # Fallback para literature
+        if not results.get("literature_query"):
+            logger.info("Aplicando fallback para literature_query")
+            fallback_queries = self.search_fallback.build_literature_fallback_queries(search_terms, limit)
+            fallback_results = self.search_fallback.execute_fallback_queries(fallback_queries)
+            results["literature_query"] = fallback_results
+            if fallback_results:
+                logger.info(f"Fallback literature retornou {len(fallback_results)} resultados")
+        
+        # Fallback para disciplines
+        if not results.get("disciplines_query"):
+            logger.info("Aplicando fallback para disciplines_query")
+            fallback_queries = self.search_fallback.build_disciplines_fallback_queries(search_terms, limit)
+            fallback_results = self.search_fallback.execute_fallback_queries(fallback_queries)
+            results["disciplines_query"] = fallback_results
+            if fallback_results:
+                logger.info(f"Fallback disciplines retornou {len(fallback_results)} resultados")
+        
+        return results

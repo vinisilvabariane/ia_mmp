@@ -1,6 +1,6 @@
+import logging
 import os
 import re
-import logging
 from collections.abc import Iterable
 
 import mysql.connector
@@ -67,34 +67,58 @@ class DatabaseRepository:
         }
 
     def execute_resource_queries(self, queries: dict[str, str | None], limit: int) -> dict[str, list[dict]]:
-        self.test_connection()
-
-        results: dict[str, list[dict]] = {}
-        for key, query in queries.items():
-            if not query:
-                results[key] = []
-                continue
-            sanitized_query = self._sanitize_select_query(query=query, limit=limit)
-            logger.info("executing_resource_query key=%s query=%s", key, sanitized_query)
-            results[key] = self._fetch_rows(sanitized_query)
-
-        return results
-
-    def _fetch_rows(self, query: str, params: Iterable | None = None) -> list[dict]:
         connection = None
-        cursor = None
+        results: dict[str, list[dict]] = {}
         try:
             connection = self.get_connection()
-            cursor = connection.cursor(dictionary=True)
+            for key, query in queries.items():
+                if not query:
+                    results[key] = []
+                    logger.debug("Query %s e None/vazia, retornando lista vazia", key)
+                    continue
+                try:
+                    sanitized_query = self._sanitize_select_query(query=query, limit=limit)
+                    logger.info("executing_resource_query key=%s", key)
+                    logger.debug("Sanitized query: %s...", sanitized_query[:200])
+                    rows = self._fetch_rows(sanitized_query, connection=connection)
+                    results[key] = rows
+                    logger.info("resource_query_success key=%s rows=%s", key, len(rows))
+                except Exception as exc:
+                    logger.error("resource_query_failed key=%s error=%s", key, exc)
+                    results[key] = []
+
+            return results
+        finally:
+            if connection is not None:
+                connection.close()
+
+    def _fetch_rows(
+        self,
+        query: str,
+        params: Iterable | None = None,
+        *,
+        connection: mysql.connector.MySQLConnection | None = None,
+    ) -> list[dict]:
+        managed_connection = connection is None
+        active_connection = connection
+        cursor = None
+        try:
+            if active_connection is None:
+                active_connection = self.get_connection()
+            cursor = active_connection.cursor(dictionary=True)
+            logger.debug("Executando query: %s...", query[:150])
             cursor.execute(query, params or ())
-            return list(cursor.fetchall())
+            rows = list(cursor.fetchall())
+            logger.debug("Query retornou %s linhas", len(rows))
+            return rows
         except mysql.connector.Error as exc:
+            logger.error("MySQL error ao executar query: %s", exc)
             raise SQLExecutionError(f"Falha ao executar query SQL: {exc}") from exc
         finally:
             if cursor is not None:
                 cursor.close()
-            if connection is not None:
-                connection.close()
+            if managed_connection and active_connection is not None:
+                active_connection.close()
 
     def _sanitize_select_query(self, query: str, limit: int) -> str:
         cleaned_query = query.strip().strip("`").strip()
@@ -119,6 +143,7 @@ class DatabaseRepository:
             for match in re.findall(r"\b(?:FROM|JOIN)\s+([a-zA-Z_][a-zA-Z0-9_]*)", cleaned_query, flags=re.IGNORECASE)
         }
         if not table_names:
+            logger.warning("Nenhuma tabela encontrada na query: %s", cleaned_query[:100])
             raise ValueError("A query SQL precisa referenciar ao menos uma tabela permitida")
 
         invalid_tables = table_names - self.ALLOWED_TABLES
@@ -126,6 +151,8 @@ class DatabaseRepository:
             raise ValueError(f"Tabelas nao permitidas na query SQL: {', '.join(sorted(invalid_tables))}")
 
         if not re.search(r"\bLIMIT\s+\d+\b", cleaned_query, flags=re.IGNORECASE):
+            logger.debug("Adicionando LIMIT %s a query", limit)
             cleaned_query = f"{cleaned_query} LIMIT {limit}"
 
+        logger.debug("Query sanitizada com sucesso: %s...", cleaned_query[:150])
         return cleaned_query

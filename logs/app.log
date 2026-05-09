@@ -1,0 +1,10 @@
+2026-05-07 04:11:43 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-07 04:11:48 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-07 04:11:48 | INFO     | app.services.rag_service | sql_queries_generated question=Quero aprender cálculo do zero has_videos=True has_literature=True has_disciplines=True
+2026-05-07 04:11:48 | INFO     | app.repositories.database_repository | executing_resource_query key=videos_query
+2026-05-07 04:11:48 | INFO     | app.repositories.database_repository | resource_query_success key=videos_query rows=3
+2026-05-07 04:11:48 | INFO     | app.repositories.database_repository | executing_resource_query key=literature_query
+2026-05-07 04:11:48 | INFO     | app.repositories.database_repository | resource_query_success key=literature_query rows=4
+2026-05-07 04:11:48 | INFO     | app.repositories.database_repository | executing_resource_query key=disciplines_query
+2026-05-07 04:11:48 | INFO     | app.repositories.database_repository | resource_query_success key=disciplines_query rows=2
+2026-05-07 04:11:51 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
