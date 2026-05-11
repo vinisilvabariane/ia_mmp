@@ -113,6 +113,11 @@ Sua tarefa e gerar uma rota de aprendizagem completa e estruturada em JSON, usan
 === OBJETIVO ===
 Produzir uma rota pratica, coerente e personalizada para o contexto do estudante.
 
+=== REGRA PEDAGOGICA CENTRAL ===
+- Quando o contexto do formulario indicar dificuldades de base matematica, mencoes a Calculo, ou curso de Engenharia com foco na disciplina de Calculo, a rota deve priorizar Calculo e seus prerequisitos matematicos.
+- Nao desvie o foco principal para o nome do curso do estudante se o objetivo pedagogico central for a disciplina de Calculo.
+- Se houver duvida entre "curso" e "componente curricular", priorize o componente curricular de Calculo.
+
 === REGRAS OBRIGATORIAS ===
 1. Retorne apenas JSON valido.
 2. Nao use markdown, comentarios ou texto fora do JSON.
