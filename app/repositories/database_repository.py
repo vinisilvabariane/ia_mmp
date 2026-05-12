@@ -92,6 +92,61 @@ class DatabaseRepository:
             if connection is not None:
                 connection.close()
 
+    def fetch_active_metric_keys(self) -> list[str]:
+        rows = self._fetch_rows(
+            "SELECT metric_key FROM metrics WHERE active = 1 ORDER BY id ASC"
+        )
+        return [str(row.get("metric_key") or "") for row in rows if str(row.get("metric_key") or "")]
+
+    def fetch_question_metric_rules(
+        self,
+        *,
+        question_keys: list[str] | None = None,
+        question_texts: list[str] | None = None,
+    ) -> list[dict]:
+        normalized_keys = [key.strip() for key in (question_keys or []) if key and key.strip()]
+        normalized_texts = [text.strip().lower() for text in (question_texts or []) if text and text.strip()]
+
+        if not normalized_keys and not normalized_texts:
+            return []
+
+        filters: list[str] = []
+        params: list[str] = []
+        if normalized_keys:
+            placeholders = ", ".join(["%s"] * len(normalized_keys))
+            filters.append(f"q.question_key IN ({placeholders})")
+            params.extend(normalized_keys)
+        if normalized_texts:
+            placeholders = ", ".join(["%s"] * len(normalized_texts))
+            filters.append(f"LOWER(q.enunciado) IN ({placeholders})")
+            params.extend(normalized_texts)
+
+        query = f"""
+            SELECT
+                q.id AS question_id,
+                q.question_key,
+                q.enunciado,
+                q.question_type,
+                q.allows_multiple,
+                q.active AS question_active,
+                qma.id AS affect_id,
+                qma.question_option_id,
+                qma.weight,
+                qma.impact_type,
+                qma.active AS affect_active,
+                m.metric_key,
+                qo.option_value,
+                qo.option_label
+            FROM questions q
+            LEFT JOIN question_metrics_affects qma ON qma.question_id = q.id
+            LEFT JOIN metrics m ON m.id = qma.metric_id
+            LEFT JOIN question_options qo ON qo.id = qma.question_option_id
+            WHERE q.active = 1
+              AND ({" OR ".join(filters)})
+            ORDER BY q.question_order ASC, qma.id ASC, qo.option_order ASC, qo.id ASC
+        """
+        return self._fetch_rows(query, params)
+
     def _fetch_rows(
         self,
         query: str,

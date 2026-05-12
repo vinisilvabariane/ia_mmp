@@ -29,6 +29,24 @@ def test_generate_route_request_accepts_educational_form_responses() -> None:
     assert payload.educational_form_responses[0].question == "O que devo revisar antes?"
 
 
+def test_generate_route_request_accepts_float_student_metrics() -> None:
+    payload = GenerateRouteRequest(
+        question="Como estudar?",
+        student_metrics={
+            "risk_score": 57.6,
+            "general_readiness_score": "41.2",
+            "mathematical_foundation_score": 50.0,
+            "autonomy_score": 64.4,
+        },
+    )
+
+    assert payload.student_metrics is not None
+    assert payload.student_metrics.risk_score == 58
+    assert payload.student_metrics.general_readiness_score == 41
+    assert payload.student_metrics.mathematical_foundation_score == 50
+    assert payload.student_metrics.autonomy_score == 64
+
+
 def test_generate_route_request_rejects_empty_educational_form_response_fields() -> None:
     with pytest.raises(ValidationError):
         GenerateRouteRequest(

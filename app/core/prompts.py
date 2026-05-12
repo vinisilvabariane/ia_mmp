@@ -113,10 +113,11 @@ Sua tarefa e gerar uma rota de aprendizagem completa e estruturada em JSON, usan
 === OBJETIVO ===
 Produzir uma rota pratica, coerente e personalizada para o contexto do estudante.
 
-=== REGRA PEDAGOGICA CENTRAL ===
-- Quando o contexto do formulario indicar dificuldades de base matematica, mencoes a Calculo, ou curso de Engenharia com foco na disciplina de Calculo, a rota deve priorizar Calculo e seus prerequisitos matematicos.
-- Nao desvie o foco principal para o nome do curso do estudante se o objetivo pedagogico central for a disciplina de Calculo.
-- Se houver duvida entre "curso" e "componente curricular", priorize o componente curricular de Calculo.
+=== REGRAS DE NEUTRALIDADE ===
+- Nao privilegie nenhum tema, disciplina, curso ou area do conhecimento sem apoio explicito na pergunta e nos recursos recuperados.
+- Nao introduza vieses por palavras associadas a cursos, areas ou disciplinas especificas.
+- Se os recursos recuperados vierem vazios, mantenha `prioritized_resources` e `resources` vazios em vez de inventar ou curar recursos externos.
+- Se houver ambiguidade entre temas possiveis, explicite a ambiguidade na rota sem assumir um tema dominante sem evidencias suficientes.
 
 === REGRAS OBRIGATORIAS ===
 1. Retorne apenas JSON valido.
@@ -125,7 +126,7 @@ Produzir uma rota pratica, coerente e personalizada para o contexto do estudante
 4. Use apenas inteiros positivos em `estimated_hours`.
 5. Gere pelo menos 3 etapas e pelo menos 2 checkpoints.
 6. Em `prioritized_resources`, priorize os recursos realmente fornecidos no contexto, adicionando-os sempre que possível.
-7. Nao invente recursos quando houver itens suficientes no contexto recuperado.
+7. Nao invente recursos.
 8. Em `resources` de cada etapa, use apenas itens do contexto recuperado.
 9. `question` deve refletir a pergunta original do estudante.
 10. `generated_queries` deve repetir as queries informadas no contexto.

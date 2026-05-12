@@ -30,8 +30,10 @@ def generate_route(payload: GenerateRouteRequest) -> GenerateRouteResponse:
     )
     return GenerateRouteResponse(route=route)
 
+
 @router.post("/generate-metrics", response_model=StudentMetrics)
 def generate_metrics(payload: GenerateMetricsRequest) -> StudentMetrics:
+    print("Generating metrics for payload:", payload)
     metrics = metrics_service.generate_metrics(
         educational_form_responses=payload.educational_form_responses,
     )

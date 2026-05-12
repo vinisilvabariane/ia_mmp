@@ -773,3 +773,211 @@
 2026-05-11 04:01:43 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines ORDER BY semester ASC, diffi...
 2026-05-11 04:01:43 | WARNING  | app.services.search_fallback_service | Todas as queries de fallback retornaram vazio
 2026-05-11 04:01:47 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 22:32:16 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-11 22:32:25 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:32:59 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:33:34 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:34:08 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:34:43 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:35:18 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:35:52 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:36:27 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:37:02 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:37:36 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:38:11 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:38:45 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:39:20 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:39:55 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:40:29 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:47:46 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-11 22:49:04 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-11 22:49:12 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:49:46 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:50:21 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:50:55 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 22:57:29 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-11 22:57:32 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-11 23:02:28 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 45, 'general_readiness_score': 48, 'mathematical_foundation_score': 58, 'autonomy_score': 55}
+2026-05-11 23:02:30 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:02:30 | INFO     | app.services.rag_service | sql_queries_generated question=Monte uma trilha de aprendizagem personalizada com foco principal na disciplina de Calculo para um estudante do curso de Engenharia Mecanica considerando o seguinte contexto do formulario: base atual em Matematica: 1; dificuldades de base: funcoes_1o_e_2o_grau_exponenciais_logaritmos, geometria_analitica, outro; outras dificuldades academicas: Tenho dificuldade em algebra, funcoes e interpretacao de problemas.; preferencia de estudo: interativos Priorize fundamentos, prerequisitos matematicos, aplicacoes de Calculo na Engenharia e recursos objetivos para estudo.. has_videos=True has_literature=True has_disciplines=True
+2026-05-11 23:02:30 | INFO     | app.repositories.database_repository | executing_resource_query key=videos_query
+2026-05-11 23:02:30 | INFO     | app.repositories.database_repository | resource_query_success key=videos_query rows=0
+2026-05-11 23:02:30 | INFO     | app.repositories.database_repository | executing_resource_query key=literature_query
+2026-05-11 23:02:30 | INFO     | app.repositories.database_repository | resource_query_success key=literature_query rows=0
+2026-05-11 23:02:30 | INFO     | app.repositories.database_repository | executing_resource_query key=disciplines_query
+2026-05-11 23:02:30 | INFO     | app.repositories.database_repository | resource_query_success key=disciplines_query rows=0
+2026-05-11 23:02:30 | INFO     | app.services.rag_service | Aplicando fallback para videos_query
+2026-05-11 23:02:30 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, url, topic, difficulty_level FROM videos WHERE LOWER(title) LIKE LOWER('%monte%') ...
+2026-05-11 23:02:30 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, url, topic, difficulty_level FROM videos WHERE LOWER(title) LIKE LOWER('%monte%') ...
+2026-05-11 23:02:30 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, url, topic, difficulty_level FROM videos ORDER BY difficulty_level ASC, duration_m...
+2026-05-11 23:02:30 | WARNING  | app.services.search_fallback_service | Todas as queries de fallback retornaram vazio
+2026-05-11 23:02:30 | INFO     | app.services.rag_service | Aplicando fallback para literature_query
+2026-05-11 23:02:30 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, topic, keywords, level FROM literature WHERE LOWER(title) LIKE LOWER('%monte%') OR...
+2026-05-11 23:02:30 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, topic, keywords, level FROM literature WHERE LOWER(keywords) LIKE LOWER('%monte%')...
+2026-05-11 23:02:30 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, topic, keywords, level FROM literature WHERE LOWER(title) LIKE LOWER('%monte%') OR...
+2026-05-11 23:02:30 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, topic, keywords, level FROM literature ORDER BY citations DESC, publication_year D...
+2026-05-11 23:02:30 | WARNING  | app.services.search_fallback_service | Todas as queries de fallback retornaram vazio
+2026-05-11 23:02:30 | INFO     | app.services.rag_service | Aplicando fallback para disciplines_query
+2026-05-11 23:02:30 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines WHERE LOWER(name) LIKE LOWER...
+2026-05-11 23:02:30 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines WHERE LOWER(name) LIKE LOWER...
+2026-05-11 23:02:30 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines WHERE LOWER(name) LIKE LOWER...
+2026-05-11 23:02:30 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines ORDER BY semester ASC, diffi...
+2026-05-11 23:02:30 | WARNING  | app.services.search_fallback_service | Todas as queries de fallback retornaram vazio
+2026-05-11 23:02:35 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:03:07 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 46, 'general_readiness_score': 58, 'mathematical_foundation_score': 56, 'autonomy_score': 65}
+2026-05-11 23:03:08 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:03:08 | INFO     | app.services.rag_service | sql_queries_generated question=Monte uma trilha de aprendizagem personalizada com foco principal na disciplina de Calculo para um estudante do curso de Engenharia Mecanica considerando o seguinte contexto do formulario: base atual em Matematica: 3; dificuldades de base: progressoes_pa_pg; outras dificuldades academicas: Sinto dificuldade em base matematica e em manter constancia de estudo durante a semana.; preferencia de estudo: auditivos Priorize fundamentos, prerequisitos matematicos, aplicacoes de Calculo na Engenharia e recursos objetivos para estudo.. has_videos=True has_literature=True has_disciplines=True
+2026-05-11 23:03:08 | INFO     | app.repositories.database_repository | executing_resource_query key=videos_query
+2026-05-11 23:03:08 | INFO     | app.repositories.database_repository | resource_query_success key=videos_query rows=0
+2026-05-11 23:03:08 | INFO     | app.repositories.database_repository | executing_resource_query key=literature_query
+2026-05-11 23:03:08 | INFO     | app.repositories.database_repository | resource_query_success key=literature_query rows=0
+2026-05-11 23:03:08 | INFO     | app.repositories.database_repository | executing_resource_query key=disciplines_query
+2026-05-11 23:03:08 | INFO     | app.repositories.database_repository | resource_query_success key=disciplines_query rows=0
+2026-05-11 23:03:08 | INFO     | app.services.rag_service | Aplicando fallback para videos_query
+2026-05-11 23:03:08 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, url, topic, difficulty_level FROM videos WHERE LOWER(title) LIKE LOWER('%monte%') ...
+2026-05-11 23:03:08 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, url, topic, difficulty_level FROM videos WHERE LOWER(title) LIKE LOWER('%monte%') ...
+2026-05-11 23:03:08 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, url, topic, difficulty_level FROM videos ORDER BY difficulty_level ASC, duration_m...
+2026-05-11 23:03:08 | WARNING  | app.services.search_fallback_service | Todas as queries de fallback retornaram vazio
+2026-05-11 23:03:08 | INFO     | app.services.rag_service | Aplicando fallback para literature_query
+2026-05-11 23:03:08 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, topic, keywords, level FROM literature WHERE LOWER(title) LIKE LOWER('%monte%') OR...
+2026-05-11 23:03:09 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, topic, keywords, level FROM literature WHERE LOWER(keywords) LIKE LOWER('%monte%')...
+2026-05-11 23:03:09 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, topic, keywords, level FROM literature WHERE LOWER(title) LIKE LOWER('%monte%') OR...
+2026-05-11 23:03:09 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, topic, keywords, level FROM literature ORDER BY citations DESC, publication_year D...
+2026-05-11 23:03:09 | WARNING  | app.services.search_fallback_service | Todas as queries de fallback retornaram vazio
+2026-05-11 23:03:09 | INFO     | app.services.rag_service | Aplicando fallback para disciplines_query
+2026-05-11 23:03:09 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines WHERE LOWER(name) LIKE LOWER...
+2026-05-11 23:03:09 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines WHERE LOWER(name) LIKE LOWER...
+2026-05-11 23:03:09 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines WHERE LOWER(name) LIKE LOWER...
+2026-05-11 23:03:09 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines ORDER BY semester ASC, diffi...
+2026-05-11 23:03:09 | WARNING  | app.services.search_fallback_service | Todas as queries de fallback retornaram vazio
+2026-05-11 23:03:13 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:11:22 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:11:22 | INFO     | app.services.rag_service | sql_queries_generated question=Quero aprender cálculo do zero has_videos=True has_literature=True has_disciplines=True
+2026-05-11 23:11:22 | INFO     | app.repositories.database_repository | executing_resource_query key=videos_query
+2026-05-11 23:11:22 | INFO     | app.repositories.database_repository | resource_query_success key=videos_query rows=0
+2026-05-11 23:11:22 | INFO     | app.repositories.database_repository | executing_resource_query key=literature_query
+2026-05-11 23:11:22 | INFO     | app.repositories.database_repository | resource_query_success key=literature_query rows=0
+2026-05-11 23:11:22 | INFO     | app.repositories.database_repository | executing_resource_query key=disciplines_query
+2026-05-11 23:11:22 | INFO     | app.repositories.database_repository | resource_query_success key=disciplines_query rows=0
+2026-05-11 23:11:22 | INFO     | app.services.rag_service | Aplicando fallback para videos_query
+2026-05-11 23:11:22 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, url, topic, difficulty_level FROM videos WHERE LOWER(title) LIKE LOWER('%quero%') ...
+2026-05-11 23:11:22 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, url, topic, difficulty_level FROM videos WHERE LOWER(title) LIKE LOWER('%quero%') ...
+2026-05-11 23:11:22 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, url, topic, difficulty_level FROM videos ORDER BY difficulty_level ASC, duration_m...
+2026-05-11 23:11:22 | WARNING  | app.services.search_fallback_service | Todas as queries de fallback retornaram vazio
+2026-05-11 23:11:22 | INFO     | app.services.rag_service | Aplicando fallback para literature_query
+2026-05-11 23:11:22 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, topic, keywords, level FROM literature WHERE LOWER(title) LIKE LOWER('%quero%') OR...
+2026-05-11 23:11:22 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, topic, keywords, level FROM literature WHERE LOWER(keywords) LIKE LOWER('%quero%')...
+2026-05-11 23:11:22 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, topic, keywords, level FROM literature WHERE LOWER(title) LIKE LOWER('%quero%') OR...
+2026-05-11 23:11:22 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, title, topic, keywords, level FROM literature ORDER BY citations DESC, publication_year D...
+2026-05-11 23:11:22 | WARNING  | app.services.search_fallback_service | Todas as queries de fallback retornaram vazio
+2026-05-11 23:11:22 | INFO     | app.services.rag_service | Aplicando fallback para disciplines_query
+2026-05-11 23:11:22 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines WHERE LOWER(name) LIKE LOWER...
+2026-05-11 23:11:22 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines WHERE LOWER(name) LIKE LOWER...
+2026-05-11 23:11:22 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines WHERE LOWER(name) LIKE LOWER...
+2026-05-11 23:11:22 | INFO     | app.services.search_fallback_service | Tentando query de fallback: SELECT id, name, difficulty_level, credits, department FROM disciplines ORDER BY semester ASC, diffi...
+2026-05-11 23:11:22 | WARNING  | app.services.search_fallback_service | Todas as queries de fallback retornaram vazio
+2026-05-11 23:11:25 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:19:17 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-11 23:19:22 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:19:22 | INFO     | app.services.rag_service | sql_queries_generated question=Quero aprender cálculo do zero has_videos=True has_literature=True has_disciplines=True
+2026-05-11 23:19:22 | INFO     | app.repositories.database_repository | executing_resource_query key=videos_query
+2026-05-11 23:19:22 | INFO     | app.repositories.database_repository | resource_query_success key=videos_query rows=0
+2026-05-11 23:19:22 | INFO     | app.repositories.database_repository | executing_resource_query key=literature_query
+2026-05-11 23:19:22 | INFO     | app.repositories.database_repository | resource_query_success key=literature_query rows=0
+2026-05-11 23:19:22 | INFO     | app.repositories.database_repository | executing_resource_query key=disciplines_query
+2026-05-11 23:19:22 | INFO     | app.repositories.database_repository | resource_query_success key=disciplines_query rows=0
+2026-05-11 23:19:25 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:26:33 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:26:33 | INFO     | app.services.rag_service | sql_queries_generated question=Quero aprender cálculo do zero has_videos=True has_literature=True has_disciplines=True
+2026-05-11 23:26:34 | INFO     | app.repositories.database_repository | executing_resource_query key=videos_query
+2026-05-11 23:26:34 | INFO     | app.repositories.database_repository | resource_query_success key=videos_query rows=0
+2026-05-11 23:26:34 | INFO     | app.repositories.database_repository | executing_resource_query key=literature_query
+2026-05-11 23:26:34 | INFO     | app.repositories.database_repository | resource_query_success key=literature_query rows=0
+2026-05-11 23:26:34 | INFO     | app.repositories.database_repository | executing_resource_query key=disciplines_query
+2026-05-11 23:26:34 | INFO     | app.repositories.database_repository | resource_query_success key=disciplines_query rows=0
+2026-05-11 23:26:36 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:27:15 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-11 23:27:56 | INFO     | app.services.metrics_service | student_metrics_generated response_count=2 generated_metrics={'risk_score': 57, 'general_readiness_score': 38, 'mathematical_foundation_score': 38, 'autonomy_score': 44}
+2026-05-11 23:28:05 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 46, 'general_readiness_score': 58, 'mathematical_foundation_score': 58, 'autonomy_score': 65}
+2026-05-11 23:28:06 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:28:06 | INFO     | app.services.rag_service | sql_queries_generated question=Monte uma trilha de aprendizagem personalizada com foco principal na disciplina de Calculo para um estudante do curso de Engenharia Mecanica considerando o seguinte contexto do formulario: base atual em Matematica: 5; dificuldades de base: funcoes_1o_e_2o_grau_exponenciais_logaritmos, trigonometria; outras dificuldades academicas: Sinto dificuldade em base matematica e em manter constancia de estudo durante a semana.; preferencia de estudo: visuais Priorize fundamentos, prerequisitos matematicos, aplicacoes de Calculo na Engenharia e recursos objetivos para estudo.. has_videos=True has_literature=True has_disciplines=True
+2026-05-11 23:28:06 | INFO     | app.repositories.database_repository | executing_resource_query key=videos_query
+2026-05-11 23:28:06 | INFO     | app.repositories.database_repository | resource_query_success key=videos_query rows=0
+2026-05-11 23:28:06 | INFO     | app.repositories.database_repository | executing_resource_query key=literature_query
+2026-05-11 23:28:06 | INFO     | app.repositories.database_repository | resource_query_success key=literature_query rows=0
+2026-05-11 23:28:06 | INFO     | app.repositories.database_repository | executing_resource_query key=disciplines_query
+2026-05-11 23:28:06 | INFO     | app.repositories.database_repository | resource_query_success key=disciplines_query rows=0
+2026-05-11 23:28:10 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:32:12 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 46, 'general_readiness_score': 58, 'mathematical_foundation_score': 64, 'autonomy_score': 55}
+2026-05-11 23:32:14 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:32:14 | INFO     | app.services.rag_service | sql_queries_generated question=Monte uma trilha de aprendizagem personalizada com foco principal na disciplina de Calculo para um estudante do curso de Engenharia Civil considerando o seguinte contexto do formulario: base atual em Matematica: 3; dificuldades de base: geometria_analitica, progressoes_pa_pg, algebra; outras dificuldades academicas: Meu maior problema hoje esta em trigonometria, organizacao dos estudos e exercicios de calculo.; preferencia de estudo: textuais Priorize fundamentos, prerequisitos matematicos, aplicacoes de Calculo na Engenharia e recursos objetivos para estudo.. has_videos=True has_literature=True has_disciplines=True
+2026-05-11 23:32:14 | INFO     | app.repositories.database_repository | executing_resource_query key=videos_query
+2026-05-11 23:32:14 | INFO     | app.repositories.database_repository | resource_query_success key=videos_query rows=0
+2026-05-11 23:32:14 | INFO     | app.repositories.database_repository | executing_resource_query key=literature_query
+2026-05-11 23:32:14 | INFO     | app.repositories.database_repository | resource_query_success key=literature_query rows=0
+2026-05-11 23:32:14 | INFO     | app.repositories.database_repository | executing_resource_query key=disciplines_query
+2026-05-11 23:32:14 | INFO     | app.repositories.database_repository | resource_query_success key=disciplines_query rows=0
+2026-05-11 23:32:18 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:34:02 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-11 23:34:14 | INFO     | app.services.metrics_service | student_metrics_generated response_count=2 generated_metrics={'risk_score': 57, 'general_readiness_score': 38, 'mathematical_foundation_score': 38, 'autonomy_score': 44}
+2026-05-11 23:34:28 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 51, 'general_readiness_score': 42, 'mathematical_foundation_score': 46, 'autonomy_score': 55}
+2026-05-11 23:34:30 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:34:30 | INFO     | app.services.rag_service | sql_queries_generated question=Monte uma trilha de aprendizagem personalizada com foco principal na disciplina de Calculo para um estudante do curso de Engenharia Mecanica considerando o seguinte contexto do formulario: base atual em Matematica: 5; dificuldades de base: funcoes_1o_e_2o_grau_exponenciais_logaritmos, polinomios, algebra; outras dificuldades academicas: Tenho dificuldade em algebra, funcoes e interpretacao de problemas.; preferencia de estudo: auditivos Priorize fundamentos, prerequisitos matematicos, aplicacoes de Calculo na Engenharia e recursos objetivos para estudo.. has_videos=True has_literature=True has_disciplines=True
+2026-05-11 23:34:30 | INFO     | app.repositories.database_repository | executing_resource_query key=videos_query
+2026-05-11 23:34:30 | INFO     | app.repositories.database_repository | resource_query_success key=videos_query rows=0
+2026-05-11 23:34:30 | INFO     | app.repositories.database_repository | executing_resource_query key=literature_query
+2026-05-11 23:34:30 | INFO     | app.repositories.database_repository | resource_query_success key=literature_query rows=0
+2026-05-11 23:34:30 | INFO     | app.repositories.database_repository | executing_resource_query key=disciplines_query
+2026-05-11 23:34:30 | INFO     | app.repositories.database_repository | resource_query_success key=disciplines_query rows=0
+2026-05-11 23:34:33 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:44:40 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-11 23:46:40 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 47, 'general_readiness_score': 58, 'mathematical_foundation_score': 50, 'autonomy_score': 65}
+2026-05-11 23:46:42 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:46:42 | INFO     | app.services.rag_service | sql_queries_generated question=Monte uma trilha de aprendizagem personalizada com foco principal na disciplina de Calculo para um estudante do curso de Engenharia Eletrica considerando o seguinte contexto do formulario: base atual em Matematica: 2; dificuldades de base: progressoes_pa_pg; outras dificuldades academicas: Sinto dificuldade em base matematica e em manter constancia de estudo durante a semana.; preferencia de estudo: auditivos Priorize fundamentos, prerequisitos matematicos, aplicacoes de Calculo na Engenharia e recursos objetivos para estudo.. has_videos=True has_literature=True has_disciplines=True
+2026-05-11 23:46:42 | INFO     | app.repositories.database_repository | executing_resource_query key=videos_query
+2026-05-11 23:46:42 | INFO     | app.repositories.database_repository | resource_query_success key=videos_query rows=0
+2026-05-11 23:46:42 | INFO     | app.repositories.database_repository | executing_resource_query key=literature_query
+2026-05-11 23:46:42 | INFO     | app.repositories.database_repository | resource_query_success key=literature_query rows=0
+2026-05-11 23:46:42 | INFO     | app.repositories.database_repository | executing_resource_query key=disciplines_query
+2026-05-11 23:46:42 | INFO     | app.repositories.database_repository | resource_query_success key=disciplines_query rows=0
+2026-05-11 23:46:45 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:47:30 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-11 23:47:34 | INFO     | app.services.metrics_service | student_metrics_generated response_count=2 generated_metrics={'risk_score': 50, 'general_readiness_score': 50, 'mathematical_foundation_score': 50, 'autonomy_score': 50}
+2026-05-11 23:47:48 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 50, 'general_readiness_score': 50, 'mathematical_foundation_score': 50, 'autonomy_score': 50}
+2026-05-11 23:47:49 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:47:49 | INFO     | app.services.rag_service | sql_queries_generated question=Monte uma trilha de aprendizagem personalizada com foco principal na disciplina de Calculo para um estudante do curso de Engenharia Eletrica considerando o seguinte contexto do formulario: base atual em Matematica: 4; dificuldades de base: trigonometria, progressoes_pa_pg; outras dificuldades academicas: Tenho dificuldade em algebra, funcoes e interpretacao de problemas.; preferencia de estudo: auditivos Priorize fundamentos, prerequisitos matematicos, aplicacoes de Calculo na Engenharia e recursos objetivos para estudo.. has_videos=True has_literature=True has_disciplines=True
+2026-05-11 23:47:49 | INFO     | app.repositories.database_repository | executing_resource_query key=videos_query
+2026-05-11 23:47:49 | INFO     | app.repositories.database_repository | resource_query_success key=videos_query rows=0
+2026-05-11 23:47:49 | INFO     | app.repositories.database_repository | executing_resource_query key=literature_query
+2026-05-11 23:47:49 | INFO     | app.repositories.database_repository | resource_query_success key=literature_query rows=0
+2026-05-11 23:47:49 | INFO     | app.repositories.database_repository | executing_resource_query key=disciplines_query
+2026-05-11 23:47:49 | INFO     | app.repositories.database_repository | resource_query_success key=disciplines_query rows=0
+2026-05-11 23:47:53 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:48:14 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-11 23:48:23 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 50, 'general_readiness_score': 50, 'mathematical_foundation_score': 50, 'autonomy_score': 50}
+2026-05-11 23:48:24 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 23:48:24 | INFO     | app.services.rag_service | sql_queries_generated question=Monte uma trilha de aprendizagem personalizada com foco principal na disciplina de Calculo para um estudante do curso de Engenharia de Computacao considerando o seguinte contexto do formulario: base atual em Matematica: 3; dificuldades de base: geometria_analitica, progressoes_pa_pg; outras dificuldades academicas: Meu maior problema hoje esta em trigonometria, organizacao dos estudos e exercicios de calculo.; preferencia de estudo: textuais Priorize fundamentos, prerequisitos matematicos, aplicacoes de Calculo na Engenharia e recursos objetivos para estudo.. has_videos=True has_literature=True has_disciplines=True
+2026-05-11 23:48:24 | INFO     | app.repositories.database_repository | executing_resource_query key=videos_query
+2026-05-11 23:48:24 | INFO     | app.repositories.database_repository | resource_query_success key=videos_query rows=0
+2026-05-11 23:48:24 | INFO     | app.repositories.database_repository | executing_resource_query key=literature_query
+2026-05-11 23:48:24 | INFO     | app.repositories.database_repository | resource_query_success key=literature_query rows=0
+2026-05-11 23:48:24 | INFO     | app.repositories.database_repository | executing_resource_query key=disciplines_query
+2026-05-11 23:48:24 | INFO     | app.repositories.database_repository | resource_query_success key=disciplines_query rows=0
+2026-05-11 23:48:28 | INFO     | httpx | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 00:02:59 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-12 00:03:29 | WARNING  | app.repositories.database_repository | database_readiness_check_failed
+2026-05-12 00:07:38 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 68, 'general_readiness_score': 31, 'mathematical_foundation_score': 32, 'autonomy_score': 62}
+2026-05-12 00:07:47 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 76, 'general_readiness_score': 38, 'mathematical_foundation_score': 13, 'autonomy_score': 47}
+2026-05-12 00:07:48 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 73, 'general_readiness_score': 50, 'mathematical_foundation_score': 36, 'autonomy_score': 52}
+2026-05-12 00:07:49 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 60, 'general_readiness_score': 38, 'mathematical_foundation_score': 16, 'autonomy_score': 35}
+2026-05-12 00:07:56 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 50, 'general_readiness_score': 42, 'mathematical_foundation_score': 68, 'autonomy_score': 45}
+2026-05-12 00:08:06 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 79, 'general_readiness_score': 33, 'mathematical_foundation_score': 17, 'autonomy_score': 38}
+2026-05-12 00:09:57 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 56, 'general_readiness_score': 45, 'mathematical_foundation_score': 37, 'autonomy_score': 65}
+2026-05-12 00:10:30 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 64, 'general_readiness_score': 28, 'mathematical_foundation_score': 11, 'autonomy_score': 39}
+2026-05-12 00:19:42 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-12 00:19:50 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 47, 'general_readiness_score': 41, 'mathematical_foundation_score': 56, 'autonomy_score': 43}
+2026-05-12 00:19:54 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 62, 'general_readiness_score': 64, 'mathematical_foundation_score': 19, 'autonomy_score': 53}
+2026-05-12 00:19:57 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 37, 'general_readiness_score': 60, 'mathematical_foundation_score': 41, 'autonomy_score': 52}
+2026-05-12 00:20:14 | INFO     | root | Logging iniciado. Arquivo de log: /app/logs/app.log
+2026-05-12 00:20:17 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 33, 'general_readiness_score': 68, 'mathematical_foundation_score': 47, 'autonomy_score': 67}
+2026-05-12 00:20:24 | INFO     | app.services.metrics_service | student_metrics_generated response_count=29 generated_metrics={'risk_score': 17, 'general_readiness_score': 47, 'mathematical_foundation_score': 56, 'autonomy_score': 62}

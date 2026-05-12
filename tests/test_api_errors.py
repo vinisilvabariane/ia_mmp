@@ -50,3 +50,28 @@ def test_generate_metrics_returns_typed_metrics_payload() -> None:
     }
     assert payload["risk_score"] >= 0
     assert payload["mathematical_foundation_score"] <= 100
+
+
+def test_generate_metrics_accepts_array_answers() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/routes/generate-metrics",
+        json={
+            "educational_form_responses": [
+                {
+                    "question": "Quais sao suas dificuldades?",
+                    "answer": ["Algebra", "Trigonometria"],
+                }
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert set(payload) == {
+        "risk_score",
+        "general_readiness_score",
+        "mathematical_foundation_score",
+        "autonomy_score",
+    }

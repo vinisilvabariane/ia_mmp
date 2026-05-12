@@ -147,3 +147,29 @@ def test_route_builder_normalizes_sparse_llm_route_payload() -> None:
     assert normalized_route.diagnosis.risk_score == 75
     assert len(normalized_route.stages) >= 3
     assert normalized_route.stages[0].resources[0].title == "Calculo 1 - Professor Leonard"
+
+
+def test_route_builder_keeps_resources_empty_when_context_is_empty() -> None:
+    builder = LearningRouteBuilder()
+
+    route = builder.build(
+        question="Preciso estudar limites",
+        metrics=StudentMetrics(
+            risk_score=50,
+            general_readiness_score=50,
+            mathematical_foundation_score=50,
+            autonomy_score=50,
+        ),
+        queries=ResourceQuerySet(),
+        resources={
+            "disciplines_query": [],
+            "videos_query": [],
+            "literature_query": [],
+        },
+    )
+
+    assert route.central_goal == "Preciso estudar limites"
+    assert route.prioritized_resources.disciplines == []
+    assert route.prioritized_resources.videos == []
+    assert route.prioritized_resources.literature == []
+    assert all(stage.resources == [] for stage in route.stages)

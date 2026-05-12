@@ -164,7 +164,6 @@ class LearningRouteBuilder:
         diagnosis: RouteDiagnosis,
         resources: dict[str, list[dict[str, Any]]],
     ) -> PrioritizedResources:
-        theme = self._infer_theme(question, resources)
         focus_terms = self._focus_terms(question, resources)
         disciplines = [
             self._to_resource_reference("discipline", row, focus_terms, diagnosis)
@@ -187,12 +186,6 @@ class LearningRouteBuilder:
             strategies.append("Usar acompanhamento mais frequente, com revisao apos cada etapa.")
         if diagnosis.pace == "ritmo acelerado com aprofundamento opcional":
             strategies.append("Reservar uma sessao semanal para exploracao avancada ou projeto curto.")
-
-        curated = self._curated_resources_for_theme(theme, diagnosis)
-        disciplines = self._fill_missing_resources(disciplines, curated.disciplines)
-        videos = self._fill_missing_resources(videos, curated.videos)
-        literature = self._fill_missing_resources(literature, curated.literature)
-        strategies = list(dict.fromkeys(strategies + curated.study_strategies))
 
         return PrioritizedResources(
             disciplines=disciplines,
@@ -440,36 +433,8 @@ class LearningRouteBuilder:
         return "3 semanas, 3 blocos, 5 a 6 horas por semana"
 
     def _build_central_goal(self, question: str) -> str:
-        normalized_question = _normalize_text(question)
-        if any(term in normalized_question for term in ("calculo", "matemat", "engenharia")):
-            return (
-                "Construir base consistente em Calculo para acompanhar a disciplina, "
-                "resolver exercicios com seguranca e aplicar os conceitos no contexto da Engenharia."
-            )
-
         clean_question = question.strip().rstrip("?")
         return clean_question[:1].upper() + clean_question[1:]
-
-    def _infer_theme(
-        self,
-        question: str,
-        resources: dict[str, list[dict[str, Any]]],
-    ) -> str:
-        normalized_question = _normalize_text(question)
-        math_terms = ("calculo", "matemat", "algebra", "funcoes", "trigonometr", "engenharia")
-        if any(term in normalized_question for term in math_terms):
-            return "calculo"
-
-        resource_blob = " ".join(
-            _normalize_text(str(row.get(field) or ""))
-            for key in ("disciplines_query", "videos_query", "literature_query")
-            for row in resources.get(key, [])[:4]
-            for field in ("topic", "name", "title", "syllabus")
-        )
-        if any(term in resource_blob for term in math_terms):
-            return "calculo"
-
-        return "generic"
 
     def _focus_terms(self, question: str, resources: dict[str, list[dict[str, Any]]]) -> set[str]:
         terms = {_normalize_text(part) for part in question.split() if len(part) > 3}
@@ -603,106 +568,3 @@ class LearningRouteBuilder:
             metadata=metadata,
         )
 
-    def _curated_resources_for_theme(
-        self,
-        theme: str,
-        diagnosis: RouteDiagnosis,
-    ) -> PrioritizedResources:
-        if theme != "calculo":
-            return PrioritizedResources(
-                disciplines=[],
-                videos=[],
-                literature=[],
-                study_strategies=[],
-            )
-
-        reason = (
-            "Recurso curado de fallback para manter a trilha focada em Calculo quando a base de recursos estiver vazia."
-        )
-        support_hint = (
-            "Priorize revisao de funcoes, algebra e leitura de problemas antes de avancar."
-            if diagnosis.support_level == "alta"
-            else "Use o recurso para consolidar fundamentos e depois avancar para exercicios aplicados."
-        )
-
-        return PrioritizedResources(
-            disciplines=[
-                ResourceReference(
-                    kind="discipline",
-                    title="Calculo I",
-                    reason=reason,
-                    topic="Limites, derivadas e integrais aplicadas a cursos de Engenharia",
-                    difficulty="fundamentos",
-                    metadata={
-                        "department": "Matematica",
-                        "fallback": True,
-                    },
-                ),
-            ],
-            videos=[
-                ResourceReference(
-                    kind="video",
-                    title="Calculo 1 - Professor Leonard",
-                    reason=reason,
-                    url="https://www.youtube.com/results?search_query=Professor+Leonard+Calculo+1",
-                    source="YouTube",
-                    topic="Fundamentos de Calculo",
-                    difficulty="iniciante",
-                    metadata={"fallback": True},
-                ),
-                ResourceReference(
-                    kind="video",
-                    title="Khan Academy Brasil - Limites, derivadas e integrais",
-                    reason=reason,
-                    url="https://pt.khanacademy.org/math/calculus-1",
-                    source="Khan Academy",
-                    topic="Calculo diferencial e integral",
-                    difficulty="iniciante a intermediario",
-                    metadata={"fallback": True},
-                ),
-            ],
-            literature=[
-                ResourceReference(
-                    kind="literature",
-                    title="Um Curso de Calculo - Hamilton Luiz Guidorizzi",
-                    reason=reason,
-                    source="Livro",
-                    topic="Fundamentos de Calculo para graduacao",
-                    difficulty="iniciante a intermediario",
-                    metadata={"fallback": True},
-                ),
-                ResourceReference(
-                    kind="literature",
-                    title="Calculo - James Stewart",
-                    reason=reason,
-                    source="Livro",
-                    topic="Calculo com foco em exercicios e aplicacoes",
-                    difficulty="intermediario",
-                    metadata={"fallback": True},
-                ),
-            ],
-            study_strategies=[
-                support_hint,
-                "Fechar cada bloco de estudo de Calculo com exercicios curtos e correção comentada.",
-            ],
-        )
-
-    def _fill_missing_resources(
-        self,
-        primary: list[ResourceReference],
-        fallback: list[ResourceReference],
-        *,
-        target_size: int = 3,
-    ) -> list[ResourceReference]:
-        merged: list[ResourceReference] = list(primary)
-        seen_titles = {item.title for item in merged}
-
-        for item in fallback:
-            if item.title in seen_titles:
-                continue
-            merged.append(item)
-            seen_titles.add(item.title)
-            if len(merged) >= target_size:
-                break
-
-        return merged
